@@ -1,54 +1,73 @@
-var fs = require("fs");
-var args = process.argv.slice(2);
+const fs = require("fs");
+const args = process.argv.slice(2);
 
-
-var code = {
-    EOF: -1,
-    str: '',
+let code = {
+    s: '',
     pos: 0,
-    getchar: function(){
-        if (this.pos < this.str.length) return this.str[this.pos++]
-        else return this.EOF
+    open: function(filename){
+        this.s = fs.readFileSync(filename, { encoding: 'utf8' });
+    },
+    size: function(){ return this.s.length; },
+    curr: function(){ return this.s[this.pos]; }
+};
+
+let tape = {
+    t: [0],
+    pos: 0,
+    size: function(){ return this.t.length; },
+    curr: function(){ return this.t[this.pos]; },
+    set: function(ch){ this.t[this.pos] = ch; },
+    incrValue: function(){ this.t[this.pos]++; },
+    descValue: function(){ this.t[this.pos]--; },
+    resize: function(){ this.t = this.t.concat(Array(this.size()).fill(0)); }
+};
+
+let io = {
+    inFD : -1,
+    outFD : -1,
+    init: function(){
+        this.inFD = fs.openSync('/dev/stdin', 'rs');
+        this.outFD = fs.openSync('/dev/stdout', 'w');
+    },
+    get: function (){
+        let buf = new Uint8Array(1);
+        fs.readSync(this.inFD, buf, 0, 1, null);
+        return buf[0];
+    },
+    put: function (ch){
+        fs.writeSync(this.outFD, String.fromCharCode(ch));
+    },
+    close: function(){
+        if (this.inFD > -1) fs.closeSync(this.inFD);
+        if (this.outFD > -1) fs.closeSync(this.outFD);
     }
 };
 
-var tape = {
-    str: [],
-    pos: 0,
-};
-
-var fd = -1; // open in main
-function getch(){
-    var buf = new Uint8Array(1);
-    fs.readSync(fd, buf, 0, 1, null);
-    return buf[0];
-}
-
 // brainfuck interpreter
-function interpret(skip){
-    var skip = skip || false;
+function interpret(skip_){
+    let skip = skip_ || false;
 
-    while (tape.pos >= 0 && code.pos < code.str.length){
-        if (tape.pos >= tape.str.length){
-            tape.str.push(0)
+    while (tape.pos >= 0 && code.pos < code.size()){
+        if (tape.pos >= tape.size()){
+            tape.resize();
         }
 
-        if (code.str[code.pos] == '['){
+        if (code.curr() == '['){
             code.pos++;
-            var oldpos = code.pos;
-            while (interpret(tape.str[tape.pos] == 0)){
+            let oldpos = code.pos;
+            while (interpret(tape.curr() == 0)){
                 code.pos = oldpos;
             }
-        } else if (code.str[code.pos] == ']'){
-            return tape.str[tape.pos] != 0;
+        } else if (code.curr() == ']'){
+            return tape.curr() != 0;
         } else if (!skip) {
-            switch(code.str[code.pos]) {
-            case '+': tape.str[tape.pos] > 255 ? 0 : tape.str[tape.pos]++; break;
-            case '-': tape.str[tape.pos] > 255 ? 0 : tape.str[tape.pos]--; break;
+            switch(code.curr()) {
+            case '+': if (tape.curr() < 255) tape.incrValue(); break;
+            case '-': if (tape.curr() < 255) tape.descValue();  break;
             case '>': tape.pos++; break;
             case '<': tape.pos--; break;
-            case '.': process.stdout.write(String.fromCharCode(tape.str[tape.pos])); break;
-            case ',': tape.str[tape.pos] = getch(); break;
+            case '.': io.put(tape.curr()); break;
+            case ',': tape.set(io.get()); break;
             }
         }
         code.pos++;
@@ -58,8 +77,8 @@ function interpret(skip){
 }
 
 function usage(){
-    console.log("usage: brainfuck.js filename.b")
-    process.exit(127)
+    console.log("usage: brainfuck.js filename.b");
+    process.exit(127);
 }
 
 function errorFatal(msg){
@@ -72,17 +91,15 @@ function main(args){
         usage();
     }
 
-    fd = fs.openSync('/dev/stdin', 'rs');
-
-    var filename = args[0]
+    let filename = args[0];
     if (! fs.existsSync(filename)){
         errorFatal("Unable to find file " + filename);
     }
-    code.str = fs.readFileSync(filename, { encoding: 'utf8' });
-    code.pos = 0;
-    interpret();
 
-    if (fd > -1)
-        fs.closeSync(fd);
+    io.init();
+    code.open(filename);
+    interpret();
+    io.close();
 }
+
 main(args);
