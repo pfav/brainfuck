@@ -3,6 +3,9 @@
 #include <string>
 #include <sstream>
 #include <limits>
+#include <vector>
+#include <memory>
+#include <utility>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -10,48 +13,85 @@
 #include <cstring>
 #include <cerrno>
 
-using namespace std;
+using std::cerr;
+using std::cin;
+using std::endl;
+using std::vector;
+using std::ifstream;
+using std::numeric_limits;
 
 using pos_t = long long;
+using cell_t = unsigned char;
 
-struct Machine{
-  string code{};
-  pos_t codePos{};
-  string tape{};
-  pos_t tapePos{};
-  
-  bool run(bool skip = false){
-    while(tapePos >= 0 && codePos < static_cast<pos_t>(code.length())){
-      if (tapePos >= static_cast<pos_t>(tape.length())){
-        tape += '\0';
-      }
+struct Code {
+public:
 
-      if (code[codePos] == '['){
-        codePos++;
-        int oldPos = codePos;
-        while(run(tape[tapePos] == '\0'))
-          codePos = oldPos;
-      } else if (code[codePos] == ']'){
-        return tape[tapePos] != '\0';
-      } else if (!skip){
-        switch(code[codePos]){
-        case '+': tape[tapePos] == numeric_limits<string::value_type>::max() ? 0 : tape[tapePos]++; break;
-        case '-': tape[tapePos] == 0 ? 0 : tape[tapePos]--; break;
-        case '>': tapePos++; break;
-        case '<': tapePos--; break;
-        case '.': cerr << tape[tapePos]; break;
-        case ',': cin >> tape[tapePos]; break;
-        }
-      }
-
-      codePos++;
-    }
-    return true;
+  using isiterator = std::istreambuf_iterator<char>;
+  Code(ifstream& input)
+    : code(isiterator(input), isiterator()),
+      Pos{0}
+  {
   }
 
+  bool done(){ return Pos >= static_cast<pos_t>(code.size()); }
+
+  vector<cell_t> code{};
+  pos_t Pos{};
+};
+
+struct Tape : public vector<cell_t>
+{
+public:
+  using vector<cell_t>::vector;
+
+  pos_t Pos{};
 };
 
 
+class Interpreter
+{
+public:
+  Interpreter(ifstream& input)
+    : code{input},
+      tape{}
+  {}
+
+  bool run(bool skip = false)
+  {
+
+    while(tape.Pos >= 0 && !code.done()){
+      if (tape.Pos >= static_cast<pos_t>(tape.size())){
+        tape.push_back(0);
+      }
+
+      if (code.code[code.Pos] == '[') {
+        code.Pos++;
+        const pos_t oldPos = code.Pos;
+        while(run(tape[tape.Pos] == 0)){
+          code.Pos = oldPos;
+        }
+      } else if (code.code[code.Pos] == ']'){
+        return tape[tape.Pos] != 0;
+      } else if (!skip){
+        switch (code.code[code.Pos]){
+        case '+': { if (tape[tape.Pos] < numeric_limits<decltype(tape)::value_type>::max()) tape[tape.Pos]++; } break;
+        case '-': { if (tape[tape.Pos] > 0) tape[tape.Pos]--; } break;
+        case '>': { tape.Pos++; } break;
+        case '<': { tape.Pos--; } break;
+        case '.': { cerr << tape[tape.Pos]; } break;
+        case ',': { cin >> tape[tape.Pos]; } break;
+        }
+      }
+
+      code.Pos++;
+    }
+
+    return true;
+  }
+private:
+  Code code;
+  Tape tape;
+};
 
 int main(int c, char **v){
   if (c < 2){
@@ -59,27 +99,23 @@ int main(int c, char **v){
     return 127;
   }
 
+  const std::string filename{v[1]};
+
   struct stat st{};
-  if (stat(v[1], &st) == -1){
+  if (stat(filename.c_str(), &st) == -1){
     cerr << "brainfuck: " << strerror(errno) << endl;
     return 127;
   }
 
   if (!S_ISREG(st.st_mode)){
-    cerr << "brainfuck: " << v[1] << " not a regular file" << endl;
+    cerr << "brainfuck: " << filename << " not a regular file" << endl;
     return 127;
   }
 
-
-  ifstream ff(v[1]);
+  ifstream ff(filename);
   if (ff){
-    Machine m{};
-    stringstream ss;
-
-    ss << ff.rdbuf();
-    m.code = ss.str();
-
-    m.run();
+    Interpreter interpreter{ff};
+    interpreter.run();
   } else {
     cerr << "brainfuck: " << strerror(errno) << endl;
     return 127;
