@@ -12,7 +12,7 @@
 #pragma GCC diagnostic ignored "-Wunused-result"
 
 #define MINSIZE (1024)
-typedef unsigned long long pos_t;
+typedef long long pos_t;
 static struct {
   char *code;
   pos_t codePos;

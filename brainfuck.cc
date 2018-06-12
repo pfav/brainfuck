@@ -13,7 +13,6 @@
 #include <cstring>
 #include <cerrno>
 
-
 using std::cerr;
 using std::cin;
 using std::endl;
@@ -21,10 +20,8 @@ using std::vector;
 using std::ifstream;
 using std::numeric_limits;
 
-using pos_t = unsigned long long;
+using pos_t = long long;
 using cell_t = unsigned char;
-
-
 
 class Code {
 public:
@@ -36,13 +33,13 @@ public:
   {
   }
 
-  bool done(){ return pos_ >= code_.size(); }
+  bool done(){ return pos_ >= static_cast<pos_t>(code_.size()); }
 
   cell_t& curr() {  return code_.at(pos_); }
   const cell_t& curr() const {  return code_.at(pos_); }
 
   pos_t& pos(){ return pos_; }
-  const pos_t pos() const { return pos_; }
+  const pos_t& pos() const { return pos_; }
 private:
   vector<cell_t> code_{};
   pos_t pos_{};
@@ -75,10 +72,9 @@ public:
   {
 
     while(tape.pos() >= 0 && !code.done()){
-      if (tape.pos() >= tape.size()){
+      if (tape.pos() >= static_cast<pos_t>(tape.size())){
         tape.push_back(0);
       }
-      //cerr << code.curr() << ' ' << std::boolalpha << (tape.curr() == 0) << std::endl;
 
       if (code.curr() == '[') {
         code.pos()++;
@@ -108,49 +104,6 @@ private:
   Code code;
   Tape tape;
 };
-
-
-/*
-
-
-struct Machine{
-  string code{};
-  pos_t codePos{};
-  string tape{};
-  pos_t tapePos{};
-  
-  bool run(bool skip = false){
-    while(tapePos >= 0 && codePos < code.length()){
-      if (tapePos >= tape.length()){
-        tape += '\0';
-      }
-
-      if (code[codePos] == '['){
-        codePos++;
-        int oldPos = codePos;
-        while(run(tape[tapePos] == '\0'))
-          codePos = oldPos;
-      } else if (code[codePos] == ']'){
-        return tape[tapePos] != '\0';
-      } else if (!skip){
-        switch(code[codePos]){
-        case '+': tape[tapePos] == numeric_limits<string::value_type>::max() ? 0 : tape[tapePos]++; break;
-        case '-': tape[tapePos] == numeric_limits<string::value_type>::max() ? 0 : tape[tapePos]--; break;
-        case '>': tapePos++; break;
-        case '<': tapePos--; break;
-        case '.': cerr << tape[tapePos]; break;
-        case ',': cin >> tape[tapePos]; break;
-        }
-      }
-
-      codePos++;
-    }
-    return true;
-  }
-
-};
-
-*/
 
 int main(int c, char **v){
   if (c < 2){

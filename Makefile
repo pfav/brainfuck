@@ -1,12 +1,15 @@
 CC = gcc
-CFLAGS = -std=c99 -Wall -Werror -pedantic -O3 -fomit-frame-pointer
+CFLAGS = -std=c99 -Wall -Werror -pedantic -O3 -march=native -fomit-frame-pointer
 CXX = g++
-CXXFLAGS = -std=c++14 -Wall -Werror -O3 -pedantic -fomit-frame-pointer
+CXXFLAGS = -std=c++14 -Wall -Werror -O3 -pedantic -march=native -fomit-frame-pointer
 LDFLAGS =
 
-all: brainfuck brainfuck_c
+all: brainfuck brainfuck_c brainfuck_lame
 
 brainfuck : brainfuck.cc
+	cc_args $(CXX) $(CXXFLAGS) -static -o $@ $< $(LDFLAGS)
+
+brainfuck_lame : brainfuck_lame.cc
 	cc_args $(CXX) $(CXXFLAGS) -static -o $@ $< $(LDFLAGS)
 
 brainfuck_c : brainfuck.c
@@ -14,4 +17,4 @@ brainfuck_c : brainfuck.c
 
 .PHONY: clean
 clean:
-	rm -rf brainfuck brainfuck_c
+	rm -rf brainfuck brainfuck_c brainfuck_lame
