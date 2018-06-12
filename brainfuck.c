@@ -9,6 +9,8 @@
 #include <fcntl.h>
 #include <errno.h>
 
+#pragma GCC diagnostic ignored "-Wunused-result"
+
 #define MINSIZE (1024)
 typedef unsigned long long pos_t;
 static struct {
