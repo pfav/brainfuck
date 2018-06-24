@@ -3,5 +3,6 @@ brainfuck
 brainfuck_c
 brainfuck_lame
 brainfuck_asm
+brainfuck_go
 *.o
 *.tmp

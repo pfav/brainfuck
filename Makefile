@@ -6,7 +6,7 @@ LDFLAGS =
 
 LOADER = /lib/x86_64-linux-gnu/ld-linux-x86-64.so.2
 
-all: brainfuck brainfuck_c brainfuck_asm
+all: brainfuck brainfuck_c brainfuck_asm brainfuck_go
 
 brainfuck : brainfuck.cc
 	cc_args $(CXX) $(CXXFLAGS) -static -o $@ $< $(LDFLAGS)
@@ -17,6 +17,9 @@ brainfuck_lame : brainfuck_lame.cc
 brainfuck_c : brainfuck.c
 	$(CC) $(CFLAGS) -static -o $@ $< $(LDFLAGS)
 
+brainfuck_go : brainfuck.go
+	go build -o $@ $<
+
 brainfuck_asm : brainfuck_asm.tmp
 	as --64 --gstabs -o $@.o $<
 	ld -dynamic-linker $(LOADER) -o $@ -lc $@.o
@@ -26,4 +29,4 @@ brainfuck_asm.tmp : brainfuck.s
 
 .PHONY: clean
 clean:
-	rm -rf brainfuck brainfuck_c brainfuck_asm *.o *.tmp
+	rm -rf brainfuck brainfuck_c brainfuck_asm brainfuck_go *.o *.tmp
