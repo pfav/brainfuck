@@ -21,7 +21,7 @@ err: 	-4095 and -1, (aka 	-errno)
 #define debug_c(a) movq a, %rdi;call fmt_c
 #define debug_s(a) movq a, %rdi; call fmt_s
 
-  .section .data
+.section .data
 fmt_i_s:
   .string "i: %d\n"
 fmt_s_s:
@@ -29,7 +29,7 @@ fmt_s_s:
 fmt_c_s:
   .string "c: %c\n"
 usage_message:
-	.string "brainfuck filename.b size"
+  .string "brainfuck filename.b size"
 // data
 code: .quad 0
 codeEND: .quad 0
@@ -38,17 +38,17 @@ tapeEND: .quad 0
 codePOS: .quad 0
 tapePOS: .quad 0
 
-  .section .text
-  .globl _start
+.section .text
+.globl _start
 _start:
-	xorq %rax, %rax
-	movq (%rsp), %rbx
+  xorq %rax, %rax
+  movq (%rsp), %rbx
   cmpq $3, %rbx
   jne .L0
-	movq 24(%rsp), %rdi
+  movq 24(%rsp), %rdi
   call strtoi
 
- 	movq 16(%rsp), %rdi
+  movq 16(%rsp), %rdi
   movq %rax, %rsi
   call codeInit
   call tapeInit
@@ -60,7 +60,7 @@ _start:
   .L0:
   call usage
   .L1:
-	movq $0, %rdi
+  movq $0, %rdi
   call exit
   hlt
   nop
@@ -68,7 +68,7 @@ _start:
 run:
   FUNC_ENTER
   subq $48, %rsp
-	movq %rdi, -8(%rbp)
+  movq %rdi, -8(%rbp)
   movq $0, -16(%rbp)
 
   .L200:
@@ -81,7 +81,7 @@ run:
   call tapeSize
   cmpq tapePOS, %rax
   jg .L20001
-	movq $0, %rsi
+  movq $0, %rsi
   call tapePush
   .L20001:
 
@@ -90,83 +90,83 @@ run:
 
   cmpq $91, -16(%rbp) // '['
   jne .L211
-	incq codePOS
+  incq codePOS
 
   movq codePOS, %rdx
   movq %rdx, -24(%rbp)
   .L2110:
   call tapeCurr
   cmpq $0, %rax
-	je .L2112
+  je .L2112
   .L2111:
-    movq $0, %rdi
-    jmp .L2113
- 	.L2112:
-	  movq $1, %rdi
+  movq $0, %rdi
+  jmp .L2113
+  .L2112:
+  movq $1, %rdi
   .L2113:
   call run
   cmpq $1, %rax
   jne .L210
   movq -24(%rbp), %rax
   movq %rax, codePOS
-	jmp .L2110
+  jmp .L2110
 
   .L211:
   cmpq $93, -16(%rbp)
   jne .L212
-	// code
   call tapeCurr
   cmpq $0, %rax
   jne .L21110
-    movq $0, %rax
-    jmp .L21120
+  movq $0, %rax
+  jmp .L21120
+
   .L21110:
-    movq $1, %rax
+  movq $1, %rax
+
   .L21120:
-	  addq $48, %rsp
-    FUNC_LEAVE
+  addq $48, %rsp
+  FUNC_LEAVE
   jmp .L210
   .L212:
   cmpq $1, -8(%rbp)
   je .L210
-  // code
-	cmpq $43, -16(%rbp)         // '+'
-    jne .Lx0
-    call tapeIncr
-    jmp .L210
+  cmpq $43, -16(%rbp)         // '+'
+  jne .Lx0
+  call tapeIncr
+  jmp .L210
   .Lx0: cmpq $45, -16(%rbp)   // '-'
-    jne .Lx1
-	  call tapeDecr
-    jmp .L210
+  jne .Lx1
+  call tapeDecr
+  jmp .L210
   .Lx1: cmpq $62, -16(%rbp)   // '>'
   jne .Lx2
-    incq tapePOS
-    jmp .L210
+  incq tapePOS
+  jmp .L210
   .Lx2: cmpq $60, -16(%rbp)   // '<'
   jne .Lx3
-    decq tapePOS
-    jmp .L210
+  decq tapePOS
+  jmp .L210
   .Lx3: cmpq $46, -16(%rbp)   // '.'
-    jne .Lx4
-      movq (tape), %rax
-      movq tapePOS, %rbx
+  jne .Lx4
+  movq (tape), %rax
+  movq tapePOS, %rbx
 
-      movq $2, %rdi
-	    leaq (%rax, %rbx, 1), %rsi
-      movq $1, %rdx
-      call write
-      jmp .L210
+  movq $2, %rdi
+  leaq (%rax, %rbx, 1), %rsi
+  movq $1, %rdx
+  call write
+  jmp .L210
   .Lx4: cmpq $44, -16(%rbp)   // ','
-      jne .L210
-	    movq (tape), %rax
-      movq tapePOS, %rbx
+  jne .L210
+  movq (tape), %rax
+  movq tapePOS, %rbx
 
-      movq $0, %rdi
-      leaq (%rax, %rbx, 1), %rsi
-      movq $1, %rdx
-      call read
+  movq $0, %rdi
+  leaq (%rax, %rbx, 1), %rsi
+  movq $1, %rdx
+  call read
 
-	    jmp .L210
+  jmp .L210
 
   .L210:
   addq $1, codePOS
@@ -214,7 +214,7 @@ codeInit:
 	
 codeSize:
   FUNC_ENTER
-	movq codeEND, %rax
+  movq codeEND, %rax
   movq code, %rbx
   subq %rbx, %rax
   FUNC_LEAVE
@@ -222,7 +222,7 @@ codeSize:
 codeCurr:
   FUNC_ENTER
   xorq %rax, %rax
-	movq (code), %rcx
+  movq (code), %rcx
   movq codePOS, %rdx
   movb (%rcx, %rdx, 1), %al
   FUNC_LEAVE
@@ -234,12 +234,12 @@ tapeInit:
   movq codeEND, %rdi
   movq %rdi, tape
 	
-	movq tape, %rax
+  movq tape, %rax
   movq code, %rbx
   subq %rbx, %rax
   movq %rax, -8(%rbp) // size
 
-	addq tape, %rax
+  addq tape, %rax
 
   movq %rax, %rdi
   call setbase
@@ -256,16 +256,16 @@ tapeInit:
 
 tapeSize:
   FUNC_ENTER
-	movq tapeEND, %rax
+  movq tapeEND, %rax
   movq tape, %rbx
   subq %rbx, %rax
   FUNC_LEAVE
 
 tapePush:
   FUNC_ENTER
-	subq $16, %rsp
-	movq %rsi, -8(%rsp)
-	movq $0, -16(%rsp)
+  subq $16, %rsp
+  movq %rsi, -8(%rsp)
+  movq $0, -16(%rsp)
 
   call getbase
   incq %rax
@@ -285,11 +285,11 @@ tapePush:
 
 tapeCurr:
   FUNC_ENTER
-	xorq %rax, %rax
-	movq (tape), %rcx
-	movq tapePOS, %rdx
-	movb (%rcx, %rdx, 1), %al
-	FUNC_LEAVE
+  xorq %rax, %rax
+  movq (tape), %rcx
+  movq tapePOS, %rdx
+  movb (%rcx, %rdx, 1), %al
+  FUNC_LEAVE
 
 tapeIncr:
   FUNC_ENTER
@@ -299,11 +299,11 @@ tapeIncr:
   FUNC_LEAVE
 
 tapeDecr:
-	  FUNC_ENTER
-	  movq (tape), %rax
-	  movq tapePOS, %rbx
-	  decb (%rax, %rbx, 1)
-	  FUNC_LEAVE
+  FUNC_ENTER
+  movq (tape), %rax
+  movq tapePOS, %rbx
+  decb (%rax, %rbx, 1)
+  FUNC_LEAVE
 
 usage:
   FUNC_ENTER
@@ -315,7 +315,7 @@ usage:
 flush:
   FUNC_ENTER
   xorq %rdi, %rdi
-	call fflush
+  call fflush
   FUNC_LEAVE
 
 // Formatting
@@ -328,14 +328,14 @@ fmt_i:
   FUNC_LEAVE
 fmt_s:
   FUNC_ENTER
-	movq %rdi, %rsi
+  movq %rdi, %rsi
   movq $fmt_s_s, %rdi
   call printf
   call flush
   FUNC_LEAVE
 fmt_c:
   FUNC_ENTER
-	movq %rdi, %rsi
+  movq %rdi, %rsi
   movq $fmt_c_s, %rdi
   call printf
   call flush
@@ -344,28 +344,28 @@ fmt_c:
 // Memory
 setbase:
   FUNC_ENTER
-	call brk
+  call brk
   FUNC_LEAVE
 getbase: // long long getbase()
   FUNC_ENTER
-	movq $0, %rdi
+  movq $0, %rdi
   call brk
   FUNC_LEAVE
 
 // syscalls
 brk:  // int brk(void *addr)
   FUNC_ENTER
-	sysname(brk)
+  sysname(brk)
   syscall
   FUNC_LEAVE
 open: // int open(const char *pathname, int flags)
   FUNC_ENTER
-	sysname(open)
+  sysname(open)
   syscall
   FUNC_LEAVE
 close:  // int close(int fd)
   FUNC_ENTER
-	sysname(close)
+  sysname(close)
   syscall
   FUNC_LEAVE
 read: // ssize_t read(int fd, void* buf, size_t count)
@@ -379,33 +379,33 @@ write: // ssize_t write(int fd, const void* buf, size_t count)
   syscall
   FUNC_LEAVE
 exit: // void [[noreturn]] _exit(int status)
-	sysname(exit)
+  sysname(exit)
   syscall
-	// [noreturn]
+  // [noreturn]
 
 // helpers
 strlen:
-	FUNC_ENTER
+  FUNC_ENTER
   xorq %rax, %rax
-	.Ls0:
+  .Ls0:
   movb (%rdi, %rax, 1), %bl
   cmpb $0, %bl
   je .Ls1
   incq %rax
   jmp .Ls0
   .Ls1:
-	FUNC_LEAVE
+  FUNC_LEAVE
 strtoi:
-	FUNC_ENTER
+  FUNC_ENTER
   subq $24, %rsp
 
-	movq %rdi, -8(%rbp)
+  movq %rdi, -8(%rbp)
   call strlen
-	subq $1, %rax
+  subq $1, %rax
   movq %rax, -16(%rbp)
   movq $1, -24(%rbp)
 
-	xorq %rax, %rax
+  xorq %rax, %rax
   movq -8(%rbp), %rdi
 
   .L100:
@@ -429,6 +429,6 @@ strtoi:
 
   jmp .L100
 
-	.L101:
+  .L101:
   addq $24, %rsp
   FUNC_LEAVE
