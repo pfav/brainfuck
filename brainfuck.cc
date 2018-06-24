@@ -25,7 +25,9 @@ using cell_t = unsigned char;
 
 class Code {
 public:
+  using value_type = cell_t;
   using isiterator = std::istreambuf_iterator<char>;
+
   Code(ifstream &input) : code_(isiterator(input), isiterator()), pos_{0} {}
 
   bool done() { return pos_ >= static_cast<pos_t>(code_.size()); }
@@ -41,17 +43,19 @@ private:
   pos_t pos_{};
 };
 
-class Tape : public vector<cell_t> {
+class Tape {
 public:
-  using vector<cell_t>::vector;
-
+  using value_type = cell_t;
   pos_t &pos() { return pos_; }
   const pos_t &pos() const { return pos_; }
 
-  cell_t &curr() { return vector::at(pos_); }
-  const cell_t &curr() const { return vector::at(pos_); }
+  cell_t &curr() { return tape_.at(pos_); }
+  const cell_t &curr() const { return tape_.at(pos_); }
 
+  size_t size() const { return tape_.size(); }
+  void push(cell_t item){ tape_.push_back(item); }
 private:
+  vector<cell_t> tape_{};
   pos_t pos_{};
 };
 
@@ -63,7 +67,7 @@ public:
 
     while (tape.pos() >= 0 && !code.done()) {
       if (tape.pos() >= static_cast<pos_t>(tape.size())) {
-        tape.push_back(0);
+        tape.push(0);
       }
 
       if (code.curr() == '[') {
