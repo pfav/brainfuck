@@ -1,3 +1,7 @@
+a.out
 brainfuck
 brainfuck_c
 brainfuck_lame
+brainfuck_asm
+*.o
+*.tmp
